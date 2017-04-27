@@ -121,7 +121,7 @@ public class GenericCommand<T> extends HystrixCommand<T> {
     }
 
     @Override
-    protected RuntimeException decomposeException(Exception e) {
+    protected Throwable decomposeException(Exception e) {
         Throwable current = e;
         while (current.getCause() != null) {
             if (current instanceof TalendRuntimeException) {
@@ -130,7 +130,7 @@ public class GenericCommand<T> extends HystrixCommand<T> {
             current = current.getCause();
         }
         if (current instanceof TalendRuntimeException) {
-            return (TalendRuntimeException) current;
+            return current;
         } else {
             return super.decomposeException(e);
         }
