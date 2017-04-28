@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.talend.daikon.exception.TalendRuntimeException;
+import org.talend.daikon.hystrix.processors.InternalErrorCodes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

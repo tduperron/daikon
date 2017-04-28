@@ -13,9 +13,6 @@
 
 package org.talend.daikon.hystrix;
 
-import static org.apache.http.HttpHeaders.AUTHORIZATION;
-
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +22,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -39,9 +34,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.talend.daikon.exception.TalendRuntimeException;
-import org.talend.daikon.exception.json.JsonErrorCode;
+import org.talend.daikon.hystrix.processors.ErrorProcessor;
+import org.talend.daikon.hystrix.processors.SecurityProcessor;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
@@ -92,7 +87,10 @@ public class GenericCommand<T> extends HystrixCommand<T> {
 
     /** DataPrep security holder. */
     @Autowired
-    private HttpSecurityProvider security;
+    private SecurityProcessor security;
+
+    @Autowired
+    private ErrorProcessor errorProcessor;
 
     private String authenticationToken;
 
@@ -156,10 +154,9 @@ public class GenericCommand<T> extends HystrixCommand<T> {
         if (headers.size() > 0) {
             headers.forEach(request::addHeader);
         }
+
         // update request header with security token
-        if (StringUtils.isNotBlank(authenticationToken)) {
-            request.addHeader(AUTHORIZATION, authenticationToken);
-        }
+        security.addSecurityHeaders(request);
 
         final HttpResponse response;
         try {
@@ -226,25 +223,8 @@ public class GenericCommand<T> extends HystrixCommand<T> {
      */
     private BiFunction<HttpRequestBase, HttpResponse, T> callOnError(Function<Exception, RuntimeException> onError) {
         return (req, res) -> {
-            LOGGER.trace("request on error {} -> {}", req, res.getStatusLine());
-            final int statusCode = res.getStatusLine().getStatusCode();
-            try {
-                String content = IOUtils.toString(res.getEntity().getContent());
-                LOGGER.debug("Content is ", content);
-                JsonErrorCode code = objectMapper.readerFor(JsonErrorCode.class).readValue(content);
-                code.setHttpStatus(statusCode);
-                final TalendRuntimeException cause = new TalendRuntimeException(code);
-                throw onError.apply(cause);
-            } catch (JsonMappingException e) {
-                LOGGER.debug("Cannot parse response content as JSON.", e);
-                // Failed to parse JSON error, returns an unexpected code with returned HTTP code
-                final TalendRuntimeException exception = new TalendRuntimeException(createUnexpectedException(statusCode), e);
-                throw onError.apply(exception);
-            } catch (IOException e) {
-                throw new TalendRuntimeException(createUnexpectedException(statusCode), e);
-            } finally {
-                req.releaseConnection();
-            }
+            errorProcessor.rethrowError(req, res, onError);
+            return null; // Not expected to get to this line.
         };
     }
 
@@ -306,26 +286,6 @@ public class GenericCommand<T> extends HystrixCommand<T> {
      */
     protected BehaviorBuilder onRedirect() {
         return on(REDIRECT_STATUS);
-    }
-
-    private JsonErrorCode createUnexpectedException(int statusCode) {
-        return new JsonErrorCode() {
-
-            @Override
-            public String getProduct() {
-                return InternalErrorCodes.UNEXPECTED_EXCEPTION.getProduct();
-            }
-
-            @Override
-            public String getCode() {
-                return InternalErrorCodes.UNEXPECTED_EXCEPTION.getCode();
-            }
-
-            @Override
-            public int getHttpStatus() {
-                return statusCode;
-            }
-        };
     }
 
     // A intermediate builder for behavior definition.

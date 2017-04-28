@@ -32,6 +32,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.talend.daikon.exception.TalendRuntimeException;
 import org.talend.daikon.exception.error.ErrorCode;
+import org.talend.daikon.hystrix.processors.InternalErrorCodes;
 
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 

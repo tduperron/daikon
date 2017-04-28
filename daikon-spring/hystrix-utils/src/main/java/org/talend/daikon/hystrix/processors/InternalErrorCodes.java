@@ -1,11 +1,11 @@
-package org.talend.daikon.hystrix;
+package org.talend.daikon.hystrix.processors;
 
 import java.util.Collection;
 import java.util.List;
 
 import org.talend.daikon.exception.error.ErrorCode;
 
-enum InternalErrorCodes implements ErrorCode {
+public enum InternalErrorCodes implements ErrorCode {
 
     UNEXPECTED_EXCEPTION;
 

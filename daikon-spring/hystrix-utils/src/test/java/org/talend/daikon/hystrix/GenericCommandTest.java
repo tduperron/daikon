@@ -13,31 +13,23 @@
 
 package org.talend.daikon.hystrix;
 
-import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.function.Function;
 
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.WebApplicationContext;
 import org.talend.daikon.exception.TalendRuntimeException;
-
-import com.netflix.hystrix.HystrixCommandGroupKey;
+import org.talend.daikon.hystrix.processors.InternalErrorCodes;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -221,35 +213,6 @@ public class GenericCommandTest {
             assertThat(lastException, nullValue());
             // underlying is returned as is (passthrough method).
             assertThat(e.getCode().getCode(), is(InternalErrorCodes.UNEXPECTED_EXCEPTION.getCode()));
-            // TODO: this was commented since TDSPException overrides TalendRuntimeException#writeTo
-            // final Iterator<Map.Entry<String, Object>> entries = e.getContext().entries().iterator();
-            // assertThat(entries.hasNext(), is(true));
-            // final Map.Entry<String, Object> next = entries.next();
-            // assertThat(next.getKey(), is("message"));
-            // assertThat(String.valueOf(next.getValue()), is("Unable to execute an operation"));
-        }
-    }
-
-    // Test command
-    @Component
-    @Scope("prototype")
-    private static class TestCommand extends GenericCommand<String> {
-
-        protected TestCommand(String url, Function<Exception, RuntimeException> errorHandling) {
-            super(HystrixCommandGroupKey.Factory.asKey("dataset"));
-            execute(() -> new HttpGet(url));
-            onError(errorHandling);
-            on(HttpStatus.OK).then(Defaults.asString());
-        }
-    }
-
-    @Component
-    @ConditionalOnProperty(name = "security.mode", havingValue = "genericCommandTest", matchIfMissing = false)
-    private static class TestSecurity implements HttpSecurityProvider {
-
-        @Override
-        public void addSecurityHeaders(HttpRequestBase request) {
-            request.addHeader(AUTHORIZATION, "#1234");
         }
     }
 }

@@ -1,5 +1,7 @@
 package org.talend.daikon.hystrix;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
+
 import java.io.StringWriter;
 
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +19,11 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.talend.daikon.exception.TalendRuntimeException;
+import org.talend.daikon.hystrix.processors.DefaultSecurityProcessor;
+import org.talend.daikon.hystrix.processors.ErrorProcessor;
+import org.talend.daikon.hystrix.processors.SecurityProcessor;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootApplication
 public class TestApplication {
@@ -28,6 +35,16 @@ public class TestApplication {
     @Bean
     public CloseableHttpClient httpClient() {
         return HttpClientBuilder.create().build();
+    }
+
+    @Bean
+    public ErrorProcessor errorProcessor(ObjectMapper objectMapper) {
+        return new DefaultSecurityProcessor(objectMapper);
+    }
+
+    @Bean
+    public SecurityProcessor securityProcessor() {
+        return request -> request.addHeader(AUTHORIZATION, "#1234");
     }
 
     @ControllerAdvice
