@@ -47,7 +47,7 @@ public class JsonPropertiesListTest {
     }
 
     @Test
-    public void testResolveJsonPropertiesList_Legacy() throws Exception {
+    public void testResolveJsonPropertiesListLegacy() throws Exception {
         String jsonDataStr = JsonSchemaUtilTest.readJson("PropertiesListPropertiesLegacy.json");
         TestComponentProperties properties = (TestComponentProperties) JsonSchemaUtil.fromJson(jsonDataStr,
                 new TestComponentProperties("compProperties").init());
