@@ -1,8 +1,9 @@
 package org.talend.logging.audit;
 
-import java.util.Map;
-
 import org.talend.logging.audit.impl.DefaultContextImpl;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Factory class for audit logging context.
@@ -17,7 +18,7 @@ import org.talend.logging.audit.impl.DefaultContextImpl;
  */
 public final class ContextBuilder {
 
-    private final Context context = new DefaultContextImpl();
+    private final Map<String, String> context = new LinkedHashMap<>();
 
     private ContextBuilder() {
     }
@@ -103,6 +104,6 @@ public final class ContextBuilder {
      * @return instance of context with all recorded elements.
      */
     public Context build() {
-        return context;
+        return new DefaultContextImpl(context);
     }
 }

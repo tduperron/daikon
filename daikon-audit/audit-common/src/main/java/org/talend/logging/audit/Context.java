@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * Represents context information for audit events to be passed as a parameter (as opposite to MDC which maintains a
  * static map).
- *
+ * The context is read-only.
  * <p>
  * An instance should be obtained using {@link ContextBuilder} factory. For example:
  * 
