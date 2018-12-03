@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.talend.daikon</groupId>
         <artifactId>daikon-messages</artifactId>
-        <version>0.29.0-SNAPSHOT</version>
+        <version>0.30.0-SNAPSHOT</version>
     </parent>
     <artifactId>messages-model</artifactId>
     <name>messages-model</name>
@@ -18,6 +18,12 @@
         <resources>
             <resource>
                 <directory>src/main/avro</directory>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.vm</include>
+                </includes>
             </resource>
         </resources>
         <plugins>
@@ -45,6 +51,8 @@
                                 <import>${project.basedir}/src/main/avro/MessageHeader.avsc</import>
                                 <import>${project.basedir}/src/main/avro/MessagePayload.avsc</import>
                             </imports>
+                            <fieldVisibility>private</fieldVisibility>
+                            <templateDirectory>${project.basedir}/src/main/resources/org/talend/daikon/messages/</templateDirectory>
                         </configuration>
                     </execution>
                 </executions>

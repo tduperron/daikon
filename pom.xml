@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.talend.daikon</groupId>
     <artifactId>daikon-parent</artifactId>
-    <version>0.29.0-SNAPSHOT</version>
+    <version>0.30.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Daikon - parent pom</name>
     <url>https://github.com/Talend/daikon</url>
@@ -27,6 +27,7 @@
     </properties>
     <modules>
         <module>daikon</module>
+        <module>daikon-exception</module>
         <module>daikon-spring</module>
         <module>daikon-service</module>
         <module>reporting</module>
